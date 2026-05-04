@@ -83,7 +83,51 @@ rather than the disk shuffle that streaming MapReduce performs.
 
 ---
 
+## Task 4 — Arrest rate analysis
+*Author: Feras Alkahtani (230313, `Feras1972-KHT`)*
+
+**Cluster — overall:** **221,932 / 793,073 = 27.98%** (matches M1 within rounding).
+
+**Top arrest rates by crime type (min 100 records):**
+
+| Crime type | Records | Arrest rate |
+|------------|--------:|------------:|
+| NARCOTICS | 74,127 | 99.88% |
+| PROSTITUTION | 9,100 | 99.88% |
+| LIQUOR LAW VIOLATION | 2,349 | 99.83% |
+| GAMBLING | 1,314 | 99.77% |
+| INTERFERENCE WITH PUBLIC OFFICER | 803 | 80.70% |
+| WEAPONS VIOLATION | 8,893 | 74.60% |
+| CRIMINAL TRESPASS | 21,476 | 73.58% |
+| PUBLIC PEACE VIOLATION | 1,827 | 66.83% |
+| HOMICIDE | 13,173 | 48.11% |
+| SEX OFFENSE | 3,932 | 32.38% |
+
+The arrest rate splits into two regimes — proactive-policing crimes near 100%
+(the report only exists because an officer made the stop) and reactive-reporting
+crimes like THEFT (14.2%) where most cases go unsolved. Phase B's ML model exploits
+this structure.
+
+---
+
 # Phase C — Deployment evidence
+
+---
+
+## Task 9 — Local execution
+*Author: Feras Alkahtani (230313, `Feras1972-KHT`)*
+
+Notebook executed end-to-end with `jupyter nbconvert --execute` (Python 3.9, PySpark
+3.5.1, Java 17). Cell 1 prints:
+
+```
+Runtime:         local
+Spark version:   3.5.1
+Spark master:    local[*]
+```
+
+10,000 rows generated in-memory by the W09B-style synthetic generator. All Tasks 1–7
+ran; outputs are embedded in `M2_BigDataGuys.ipynb`.
 
 ---
 
