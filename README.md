@@ -120,6 +120,32 @@ rows that Spark's CSV parser keeps.
 
 ---
 
+## Task 3 — Year trend
+*Author: Saud Aldawood (230336, `saudaldawood`)*
+
+Yearly counts on the full HDFS dataset:
+
+| Year | Incidents | | Year | Incidents |
+|---:|---:|---|---:|---:|
+| 2001 | 467,301 | | 2014 | 825 |
+| 2002 | 205,266 | | 2015 | 1,105 |
+| 2003 | 985     | | 2016 | 1,339 |
+| 2004 | 915     | | 2017 | 1,387 |
+| 2005 | 1,031   | | 2018 | 1,327 |
+| 2006 | 796     | | 2019 | 1,174 |
+| 2007 | 762     | | 2020 | 1,832 |
+| 2008 | 1,010   | | 2021 | 2,399 |
+| 2009 | 910     | | 2022 | 4,678 |
+| 2010 | 695     | | 2023 | 81,461 |
+| 2011 | 770     | | 2024 | 880   |
+| 2012 | 800     | | 2025 | 12,710 |
+| 2013 | 714     | | | |
+
+2001 and 2002 dominate the dataset, then a long quiet stretch through 2022 and a
+2023 spike. The local matplotlib chart is at `output/year_distribution.png`.
+
+---
+
 ## Task 4 — Arrest rate analysis
 *Author: Feras Alkahtani (230313, `Feras1972-KHT`)*
 
@@ -149,8 +175,6 @@ this structure.
 
 # Phase B — MLlib arrest predictor (5% sample)
 
----
-
 ## Task 5 — Feature pipeline
 *Author: Khalid Aleisa (230525, `khalidaleissa`)*
 
@@ -172,8 +196,6 @@ Sample feature vectors from the cluster training set:
 
 Vector layout: `[Hour, crime_idx, District, dom_idx]`.
 
----
-
 ## Task 6 — Train and evaluate three classifiers
 *Author: Khalid Aleisa (230525, `khalidaleissa`)*
 
@@ -193,8 +215,6 @@ Cluster results (5% sample of the full HDFS dataset):
 **Top model by AUC: GBT (0.8241).** GBT trains 12× longer than RF for ~2 percentage
 points of AUC — for production deployment Random Forest is the better cost/quality
 trade-off.
-
----
 
 ## Task 7 — Random Forest feature importances
 *Author: Abdulmohsen Binkhamis (230241, `amohsentk`)*
@@ -219,8 +239,6 @@ does not matter to them.
 
 # Phase C — Deployment evidence
 
----
-
 ## Task 9 — Local execution
 *Author: Feras Alkahtani (230313, `Feras1972-KHT`)*
 
@@ -236,7 +254,40 @@ Spark master:    local[*]
 10,000 rows generated in-memory by the W09B-style synthetic generator. All Tasks 1–7
 ran; outputs are embedded in `M2_BigDataGuys.ipynb`.
 
----
+## Task 10 — Cluster execution: client mode
+*Author: Saud Aldawood (230336, `saudaldawood`)*
+
+```bash
+saldawood@master-node:~$ source /etc/profile.d/hadoop.sh
+saldawood@master-node:~$ source /etc/profile.d/spark.sh
+saldawood@master-node:~$ spark-submit --master yarn --deploy-mode client \
+    --num-executors 2 --executor-memory 768m --executor-cores 1 \
+    --driver-memory 1g notebook_runner.py
+```
+
+Excerpt from `output/cluster_yarn_log.txt`:
+
+```
+Runtime:         cluster
+Spark version:   3.5.4
+Spark master:    yarn
+Row count: 793,073
+Phase B working set: 39,534 rows  (5% sample, seed=42)
+Train rows: 31,728   Test rows: 7,806
+
+>>> training LogisticRegression
+  AUC       0.6022
+  Train(s)  21.3
+>>> training RandomForest
+  AUC       0.8067
+  Train(s)  36.1
+>>> training GBT
+  AUC       0.8241
+  Train(s)  437.7
+Top model by AUC: GBT (0.8241)
+```
+
+YARN application: `application_1777830883738_0024`.
 
 ## Task 11 — spark-submit (cluster mode)
 *Author: Abdulrahman Alghannam (220455, `abalghannam`)*
