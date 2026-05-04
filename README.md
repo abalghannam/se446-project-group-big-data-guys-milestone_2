@@ -110,6 +110,55 @@ this structure.
 
 ---
 
+# Phase B — MLlib arrest predictor (5% sample)
+
+---
+
+## Task 5 — Feature pipeline
+*Author: Khalid Aleisa (230525, `khalidaleissa`)*
+
+`StringIndexer` for `Primary Type` and `Domestic_str`, `VectorAssembler` over four
+features, 80/20 split with `seed=42`. The 5% sample is applied before any feature
+engineering.
+
+Sample feature vectors from the cluster training set:
+
+```
++-------------------+---------+----+--------+------------+-------+--------------------+-----+
+|Primary Type       |crime_idx|Hour|District|Domestic_str|dom_idx|feat_vec            |label|
++-------------------+---------+----+--------+------------+-------+--------------------+-----+
+|HOMICIDE           |11.0     |10  |25      |false       |0.0    |[10.0,11.0,25.0,0.0]|1    |
+|HOMICIDE           |11.0     |13  |5       |false       |0.0    |[13.0,11.0,5.0,0.0] |1    |
+|HOMICIDE           |11.0     |20  |3       |false       |0.0    |[20.0,11.0,3.0,0.0] |0    |
++-------------------+---------+----+--------+------------+-------+--------------------+-----+
+```
+
+Vector layout: `[Hour, crime_idx, District, dom_idx]`.
+
+---
+
+## Task 6 — Train and evaluate three classifiers
+*Author: Khalid Aleisa (230525, `khalidaleissa`)*
+
+Cluster results (5% sample of the full HDFS dataset):
+
+| Model | Params | Train (s) | AUC | Accuracy | F1 | Precision | Recall |
+|-------|--------|----------:|----:|---------:|---:|----------:|-------:|
+| Logistic Regression | maxIter=100, regParam=0.01 | 21.3 | 0.6022 | 0.7280 | 0.6376 | 0.6923 | 0.7280 |
+| Random Forest | numTrees=100, maxDepth=5, maxBins=64 | 36.1 | 0.8067 | 0.8156 | 0.7802 | 0.8528 | 0.8156 |
+| **GBT** | maxIter=50, maxDepth=5, maxBins=64 | 437.7 | **0.8241** | **0.8500** | **0.8337** | **0.8610** | **0.8500** |
+
+**Confusion matrices (TN/FP/FN/TP):**
+- LR:  (5549, 93, 2030, 133)
+- RF:  (5641, 1, 1438, 725)
+- GBT: (5553, 89, 1082, 1081)
+
+**Top model by AUC: GBT (0.8241).** GBT trains 12× longer than RF for ~2 percentage
+points of AUC — for production deployment Random Forest is the better cost/quality
+trade-off.
+
+---
+
 # Phase C — Deployment evidence
 
 ---
