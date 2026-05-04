@@ -83,6 +83,43 @@ rather than the disk shuffle that streaming MapReduce performs.
 
 ---
 
+## Task 2 — Location hotspots (Spark SQL)
+*Author: Abdulmohsen Binkhamis (230241, `amohsentk`)*
+
+```python
+crimes_df.createOrReplaceTempView("crime_records")
+
+location_hotspots = spark.sql("""
+    SELECT  `Location Description` AS hotspot,
+            COUNT(*)               AS records
+      FROM  crime_records
+     WHERE  `Location Description` IS NOT NULL
+     GROUP  BY `Location Description`
+     ORDER  BY records DESC
+     LIMIT  10
+""")
+```
+
+**M1 ↔ M2 — Top 10 hotspots (full dataset):**
+
+| Location | M1 | M2 |
+|----------|---:|---:|
+| STREET | 245,437 | 248,326 |
+| RESIDENCE | 136,238 | 136,393 |
+| APARTMENT | 60,925 | 61,235 |
+| SIDEWALK | 47,407 | 47,506 |
+| OTHER | 29,213 | 29,671 |
+| PARKING LOT/GARAGE(NON.RESID.) | 21,876 | 22,436 |
+| ALLEY | 18,258 | 18,349 |
+| SCHOOL, PUBLIC, BUILDING | 20,516 | 15,776 |
+| RESIDENCE-GARAGE | 14,266 | 14,291 |
+| SMALL RETAIL STORE | 13,755 | 13,804 |
+
+Slight differences come from M1's manual CSV split dropping a few hundred edge-case
+rows that Spark's CSV parser keeps.
+
+---
+
 ## Task 4 — Arrest rate analysis
 *Author: Feras Alkahtani (230313, `Feras1972-KHT`)*
 
@@ -156,6 +193,27 @@ Cluster results (5% sample of the full HDFS dataset):
 **Top model by AUC: GBT (0.8241).** GBT trains 12× longer than RF for ~2 percentage
 points of AUC — for production deployment Random Forest is the better cost/quality
 trade-off.
+
+---
+
+## Task 7 — Random Forest feature importances
+*Author: Abdulmohsen Binkhamis (230241, `amohsentk`)*
+
+```
+crime_idx     0.7712  ||||||||||||||||||||||||||||||||||||||
+Hour          0.0807  ||||
+District      0.0763  ||||
+dom_idx       0.0718  ||||
+```
+
+`crime_idx` dominates because the per-crime arrest-rate distribution from Task 4 is
+itself dominated by crime type (NARCOTICS ≈ 99% vs THEFT ≈ 14%). Once a tree splits
+on the crime-type index it has most of its answer.
+
+Logistic Regression underperforms the tree models because it treats `crime_idx`
+as a numeric feature and fits a linear coefficient — implying a meaningless ordering
+between crime types. Trees split on individual values of the index so the ordering
+does not matter to them.
 
 ---
 
